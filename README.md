@@ -101,6 +101,77 @@ uv run python cad/build123d/hello_world_render.py
 
 ## Measurements to capture
 
+### Hose socket concept
+
+`cad/build123d/hose_socket_concept.py` adds a **90-degree elbow and sideways
+female socket** to the reference interface. The hose inserts parallel to the
+mounting plate. The bend keeps a 33 mm round passage, then expands over 6 mm
+to the socket. Defaults are an **unmeasured 38 mm connector OD**,
+0.4 mm diametral clearance, 25 mm insertion depth (including a 1.5 mm entry
+chamfer), 3 mm walls, and a 24 mm bend centreline radius. Overall height is
+49.6 mm; the socket mouth is 55 mm from the inlet axis along -Y.
+Measure the hose connector's outside diameter; nominal hose size is not that
+measurement. Dock cover clearance, seal/retention, and relief remain unresolved.
+
+```sh
+uv run --with ocp_vscode python cad/build123d/hose_socket_concept.py --show
+# Substitute the measured connector OD:
+uv run python cad/build123d/hose_socket_concept.py --connector-od 38 --clearance 0.4
+# Aim the elbow toward another side of the compartment if needed:
+uv run --with ocp_vscode python cad/build123d/hose_socket_concept.py --exit-angle 90 --show
+```
+
+The default -Y exit points opposite the +Y insertion arrow, as requested for
+the hose to come back out of the compartment. Height and hose insertion space
+still need checking against the compartment.
+
+A solid pedestal fills beneath the elbow/socket to its centreline, with the
+air passage subtracted through it. Its underside is coplanar with the card,
+including the 4.2 mm extension beyond the trailing edge. Default width is
+39–44.4 mm, leaving the sliding side edges and arrow end unchanged. This removes
+the external underside gap; the internal duct roof still needs slicer review.
+The bend-end pedestal is trimmed to the elbow's curved outer envelope, removing
+the projecting box corners without changing the internal passage.
+
+Exports: `cad/exports/hose-elbow-concept.step` and `.stl`. Earlier upright
+`hose-socket-concept` exports are superseded. This is a concept
+for geometry review; use the separate interface part for the initial dock fit test.
+
+### Reference interface
+
+A 0.4 mm-deep arrow on the hose-side face marks the **provisional +Y insertion
+direction**. The elbow exits -Y, opposite that arrow. This relative direction
+is user-specified; physical fit and compartment clearance remain unverified.
+
+The current interface is a single 70 × 101.6 × 3.4 mm card with a Ø33 mm
+inlet. The source bin's neck and backing slab are omitted: the dock takes a
+card, not a two-plate groove. The elbow now joins directly to the card.
+The fit-test card can lie flat on the bed; the elbow still needs its own
+orientation/support review. Physical dock fit and sealing remain unverified.
+
+For compatibility with the previous support-access filename:
+
+```sh
+uv run --with ocp_vscode python cad/build123d/hose_socket_concept.py --support-access --show
+```
+
+This exports `cad/exports/hose-elbow-support-access.stl` and `.step` as aliases
+of the current single-card elbow. Support-access slots have been removed from
+both models: there is no trapped rail-gap overhang, and extra holes in the
+single card could compromise the seal. Reimport STLs into saved slicer projects;
+existing 3MF files are not updated automatically.
+
+The supplied V7 dust-bin mesh has now been used to recreate an inlet and sliding
+flange. See [the measurement record](measurements/v7-interface.md) for recovered
+dimensions, comparison results, and known simplifications. Build its fit-test part:
+
+```sh
+uv run python cad/build123d/reference_interface.py
+```
+
+This reproduces the reference mesh's mating dimensions; physical L50 fit remains
+unverified.
+
 The first CAD model should not guess these values:
 
 - collar outside dimensions and insertion depth;
