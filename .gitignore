@@ -1,0 +1,56 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+
+# Editor and IDE metadata
+.idea/
+.vscode/
+*.swp
+*.swo
+*.swn
+*~
+
+# OpenSCAD temporary and backup files
+*.scad~
+*.scad.bak
+*.scad.orig
+*.openscad-bak
+
+# CAD exports and generated meshes
+# Keep editable source and measurement data under version control.
+cad/exports/*
+!cad/exports/.gitkeep
+
+# Common generated CAD formats when written outside cad/exports/
+*.stl.tmp
+*.3mf.tmp
+*.step.tmp
+*.stp.tmp
+
+# Build, cache, and temporary output
+build/
+dist/
+out/
+tmp/
+temp/
+.cache/
+*.log
+
+# Python tooling, if later used for CAD automation or test scripts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.venv/
+venv/
+env/
+
+# Node tooling, if later used for documentation or automation
+node_modules/
+.pnpm-store/
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
