@@ -81,6 +81,18 @@ The plan is not to treat OpenSCAD as a permanent constraint. Re-evaluate if the 
 
 For the last case, [CadQuery](https://cadquery.readthedocs.io/en/stable/) is a reasonable next option because it provides scripted parametric CAD and can export formats such as STEP and 3MF. For the first three cases, a conventional feature-based CAD tool may become more productive. Until those needs appear, OpenSCAD keeps the prototype small and easy to iterate.
 
+### build123d experiment
+
+This repository also includes a small [build123d test model](cad/build123d/adapter_test.py). It uses placeholder dimensions to exercise a Python-based parametric workflow, boolean modeling, and STEP/STL export. It is not an L50-fit adapter yet.
+
+Run it with:
+
+```sh
+uv run python cad/build123d/adapter_test.py
+```
+
+The generated files are written under `cad/exports/` and intentionally remain ignored by Git. If this workflow feels better once real measurements arrive, build123d is a credible candidate for the main implementation rather than just a test tool.
+
 ## Measurements to capture
 
 The first CAD model should not guess these values:
