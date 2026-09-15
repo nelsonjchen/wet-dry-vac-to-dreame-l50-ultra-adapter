@@ -93,6 +93,12 @@ uv run python cad/build123d/adapter_test.py
 
 The generated files are written under `cad/exports/` and intentionally remain ignored by Git. If this workflow feels better once real measurements arrive, build123d is a credible candidate for the main implementation rather than just a test tool.
 
+For a visual smoke test, render the small raised-text model:
+
+```sh
+uv run python cad/build123d/hello_world_render.py
+```
+
 ## Measurements to capture
 
 The first CAD model should not guess these values:
