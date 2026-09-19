@@ -147,12 +147,35 @@ for geometry review; use the separate interface part for the initial dock fit te
 
 ### Reference interface
 
+Rigid prints carry a recessed **REV 1** label beside the insertion arrow on
+the hose-facing side (4 mm font, 0.4 mm engraving depth). The TPU ring is
+unmarked. `InterfaceDimensions.revision` controls this shared print revision;
+bump it deliberately when making the next physical revision. It is independent
+of the Git commit and is not automatically incremented by regeneration.
+
+The TPU seal resembles an attached O-ring: a rounded bead extends **-Z toward
+the dock**, 1 mm below the card's dock-facing surface. It presses in from -Z
+into a blind annular dovetail groove (35 mm ID, 42 mm OD, 1.6 mm deep).
+The +Z face remains solid above the groove: 1.8 mm backing, with a 1 mm radial
+plastic rim separating it from the unchanged 33 mm airflow hole. The TPU
+does not pass through the card or appear on its +Z face. The flexible widened
+base fits behind the groove mouth for prototype retention. Both card and elbow
+share this seat. Use the matching updated ring, not the earlier through-card seal.
+
+`cad/exports/dock-gasket-tpu.stl` prints flange-flat, rounded sealing bead up;
+total height is 2.4 mm. This print orientation is opposite its installed orientation
+(installed Z=-1 to 1.4 mm). Regenerate with `reference_interface.py`. Dimensions
+are adjustable in `InterfaceDimensions`. Compression and snap retention are
+unverified: test insertion, pull-out, and sealing before powered use. Inspect
+slicing of the blind groove and its undercut; support may be needed. This removes
+the direct through-card pocket path but does not guarantee an airtight dock seal.
+
 A 0.4 mm-deep arrow on the hose-side face marks the **provisional +Y insertion
 direction**. The elbow exits down-right with a 3 mm right-edge margin. This relative direction
 is user-specified; physical fit and compartment clearance remain unverified.
 
 The current interface is a single 70 × 101.6 × 3.4 mm card with a Ø33 mm
-inlet. The source bin's neck and backing slab are omitted: the dock takes a
+rigid inlet. The source bin's neck and backing slab are omitted: the dock takes a
 card, not a two-plate groove. The elbow now joins directly to the card.
 The fit-test card can lie flat on the bed; the elbow still needs its own
 orientation/support review. Physical dock fit and sealing remain unverified.

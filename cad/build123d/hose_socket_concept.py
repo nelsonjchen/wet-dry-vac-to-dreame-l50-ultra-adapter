@@ -6,7 +6,7 @@ from build123d import (
     Align, Axis, Box, Circle, Cone, Cylinder, Pos, Rot, ThreePointArc, Polygon, Rectangle,
     export_step, export_stl, sweep, extrude, revolve, loft,
 )
-from reference_interface import InterfaceDimensions, build_interface
+from reference_interface import InterfaceDimensions, build_interface, gasket_seat
 
 def build_socket_concept(connector_od=32.0, clearance=0.4, insertion_depth=35.0,
                          bend_radius=24.0, exit_angle=None, support_access=False,
@@ -112,6 +112,8 @@ def build_socket_concept(connector_od=32.0, clearance=0.4, insertion_depth=35.0,
         throat_radius, top_of_plate + 0.1, align=alignment,
     )
     part = build_interface() + orient * (outer + pedestal) - orient * inner - inlet
+    # Cut after union: the bed-level pedestal must not refill the dock seal seat.
+    part -= gasket_seat(d)
     # support_access is retained as a legacy export-name alias only.
     # A single card has no trapped rail-gap supports and must not be perforated.
     part.label = f'{tilt_up:g}-degree upward hose outlet - unmeasured connector'
