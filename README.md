@@ -103,32 +103,40 @@ uv run python cad/build123d/hello_world_render.py
 
 ### Hose socket concept
 
-`cad/build123d/hose_socket_concept.py` adds a **90-degree elbow and sideways
-female socket** to the reference interface. The hose inserts parallel to the
-mounting plate. The bend keeps a 33 mm round passage, then expands over 6 mm
-to the socket. Defaults are an **unmeasured 38 mm connector OD**,
-0.4 mm diametral clearance, 25 mm insertion depth (including a 1.5 mm entry
-chamfer), 3 mm walls, and a 24 mm bend centreline radius. Overall height is
-49.6 mm; the socket mouth is 55 mm from the inlet axis along -Y.
+`cad/build123d/hose_socket_concept.py` adds a **90-degree elbow with a horizontal
+socket aimed down-right in top view**, automatically limited to preserve a
+3 mm clear strip inside the card's +X edge.
+The bend keeps a 33 mm round passage, then transitions over 6 mm
+to the socket. Defaults are a **guessed, unmeasured 32 mm connector OD** for the
+Stanley SL18129, with a **31.4 mm root / 33.4 mm mouth tapered bore** before
+the entry chamfer. The taper is centered on OD + 0.4 mm diametral clearance.
+Defaults are 2 mm diametral taper, 35 mm insertion depth (including a 1.5 mm entry
+chamfer), 3 mm walls, and a 24 mm bend centreline radius.
+Default XY angle is calculated from the pipe/support footprint; elevation defaults
+to `--tilt-up 0`. An explicit `--exit-angle` overrides the clearance constraint.
 Measure the hose connector's outside diameter; nominal hose size is not that
 measurement. Dock cover clearance, seal/retention, and relief remain unresolved.
+Use `--socket-taper` to tune the mouth-minus-root diameter (0 gives a straight
+bore), and `--insertion-depth` to tune engagement length. These are provisional
+push-fit dimensions, not a verified fit; do not force the hose into the card.
 
 ```sh
-uv run --with ocp_vscode python cad/build123d/hose_socket_concept.py --show
+uv run --with ocp_viewer python cad/build123d/hose_socket_concept.py --show
 # Substitute the measured connector OD:
 uv run python cad/build123d/hose_socket_concept.py --connector-od 38 --clearance 0.4
 # Aim the elbow toward another side of the compartment if needed:
-uv run --with ocp_vscode python cad/build123d/hose_socket_concept.py --exit-angle 90 --show
+uv run --with ocp_viewer python cad/build123d/hose_socket_concept.py --exit-angle 90 --show
 ```
 
-The default -Y exit points opposite the +Y insertion arrow, as requested for
-the hose to come back out of the compartment. Height and hose insertion space
+The default exit points slightly right of -Y, away from the +Y insertion arrow.
+Height and hose insertion space
 still need checking against the compartment.
 
 A solid pedestal fills beneath the elbow/socket to its centreline, with the
 air passage subtracted through it. Its underside is coplanar with the card,
-including the 4.2 mm extension beyond the trailing edge. Default width is
-39–44.4 mm, leaving the sliding side edges and arrow end unchanged. This removes
+and rotates with the outlet. Its local width is 39–44.4 mm. Automatic aiming
+keeps the entire pipe/support footprint at or inside X=32 mm, preserving 3 mm
+to the right edge. Physical rail fit still needs checking; the fit-test card is unchanged. This removes
 the external underside gap; the internal duct roof still needs slicer review.
 The bend-end pedestal is trimmed to the elbow's curved outer envelope, removing
 the projecting box corners without changing the internal passage.
@@ -140,7 +148,7 @@ for geometry review; use the separate interface part for the initial dock fit te
 ### Reference interface
 
 A 0.4 mm-deep arrow on the hose-side face marks the **provisional +Y insertion
-direction**. The elbow exits -Y, opposite that arrow. This relative direction
+direction**. The elbow exits down-right with a 3 mm right-edge margin. This relative direction
 is user-specified; physical fit and compartment clearance remain unverified.
 
 The current interface is a single 70 × 101.6 × 3.4 mm card with a Ø33 mm
