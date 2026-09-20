@@ -159,6 +159,19 @@ for geometry review; use the separate interface part for the initial dock fit te
 
 ### Reference interface
 
+**Full REV 4 preview:** `uv run python cad/build123d/rev4_full_adapter.py`
+REV 4 rigid models use 5.5 mm revision lettering and bold 5 mm project-name
+lettering on two lines, `DREAME L50 ULTRA` / `VAC ADAPTER`, on the base.
+The shorter insertion arrow is on the upper right. All markings are recessed 0.4 mm;
+the part dimensions are unchanged by this labeling update.
+exports `hose-adapter-rev4.stl` and STEP, leaving the earlier full adapter files
+untouched. It shares REV 4's fit dimensions, but omits the pull tab, plus the successfully
+tested 30.75 mm-based tapered socket. No TPU is included in the rigid export;
+the blind gasket groove remains for optional later use. REV 4's standalone
+card was not printed; only REV 3's fit improvement was physically reported.
+The centered pull tab remains on the standalone test card only, since the full
+adapter's pipe/support overlaps it.
+
 **REV 4 pull-tab trial:** `uv run python cad/build123d/rev4_card_fit_test.py`
 exports `reference-interface-rev4-fit-test.stl`. REV 3 was reported to fit much
 better. Its fit outline is preserved; a centered bag-style flat pull tab adds

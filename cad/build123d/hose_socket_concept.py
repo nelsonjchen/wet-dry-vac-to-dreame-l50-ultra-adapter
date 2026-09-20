@@ -10,12 +10,12 @@ from reference_interface import InterfaceDimensions, build_interface, gasket_sea
 
 def build_socket_concept(connector_od=30.75, clearance=0.4, insertion_depth=35.0,
                          bend_radius=24.0, exit_angle=None, support_access=False,
-                         tilt_up=0.0, socket_taper=2.0):
+                         tilt_up=0.0, socket_taper=2.0, interface_dimensions=None):
     # Approximate caliper measurement; user confirmed the matching tapered
     # socket_fit_test.py coupon fits well. Full assembly/seal not yet tested.
     if connector_od <= 0 or clearance < 0 or insertion_depth < 5:
         raise ValueError('Require positive connector OD, nonnegative clearance, and depth >= 5 mm')
-    d = InterfaceDimensions()
+    d = interface_dimensions or InterfaceDimensions()
     if not 0 <= tilt_up <= 60:
         raise ValueError('Upward tilt must be between 0 and 60 degrees')
     bend_degrees = 90 - tilt_up
@@ -116,12 +116,12 @@ def build_socket_concept(connector_od=30.75, clearance=0.4, insertion_depth=35.0
     inlet = Pos(0, 0, -0.1) * Cylinder(
         throat_radius, top_of_plate + 0.1, align=alignment,
     )
-    part = build_interface() + orient * duct - orient * inner - inlet
+    part = build_interface(d) + orient * duct - orient * inner - inlet
     # Cut after union: the bed-level pedestal must not refill the dock seal seat.
     part -= gasket_seat(d)
     # support_access is retained as a legacy export-name alias only.
     # A single card has no trapped rail-gap supports and must not be perforated.
-    part.label = f'REV 1 hose adapter - {connector_od:g} mm connector'
+    part.label = f'REV {d.revision} hose adapter - {connector_od:g} mm connector'
     if not part.is_valid or len(part.solids()) != 1:
         raise RuntimeError('Expected one valid solid')
     return part

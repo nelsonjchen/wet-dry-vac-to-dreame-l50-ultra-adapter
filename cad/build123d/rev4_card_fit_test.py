@@ -4,11 +4,16 @@ from build123d import export_stl, export_step
 from reference_interface import InterfaceDimensions, build_interface
 
 
-def build_rev4_card():
-    return build_interface(InterfaceDimensions(
-        revision=4, trailing_width=78.0,
+def rev4_dimensions():
+    return InterfaceDimensions(
+        revision=4, revision_font_size=5.5,
+        project_label='DREAME L50 ULTRA\nVAC ADAPTER', trailing_width=78.0,
         trailing_positive_x_extra=3.0, trailing_end_inset=19.0,
-        pull_tab_length=14.0, pull_tab_width=24.0))
+        pull_tab_length=14.0, pull_tab_width=24.0)
+
+
+def build_rev4_card():
+    return build_interface(rev4_dimensions())
 
 
 if __name__ == '__main__':

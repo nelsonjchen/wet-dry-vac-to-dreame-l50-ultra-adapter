@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from build123d import (
-    Align, Axis, Cylinder, Torus, Pos, Rot, Plane, RectangleRounded, Polygon, Text,
+    Align, Axis, Cylinder, Torus, Pos, Rot, Plane, RectangleRounded, Polygon, Text, FontStyle,
     export_step, export_stl, extrude, fillet, chamfer, revolve,
 )
 
@@ -28,6 +28,8 @@ class InterfaceDimensions:
     gasket_radial_clearance: float = 0.2
     gasket_proud: float = 1.0
     revision: int = 1
+    revision_font_size: float = 4.0
+    project_label: str = ''
     trailing_width: float | None = None
     trailing_positive_x_extra: float = 0.0
     trailing_end_inset: float = 0.0
@@ -111,13 +113,24 @@ def build_interface(d: InterfaceDimensions = InterfaceDimensions()):
         (-2, 24), (2, 24), (2, 34), (6, 34),
         (0, 43), (-6, 34), (-2, 34), align=None,
     )
+    if d.project_label:
+        # Reserve two full-width lines for readable identification; put a
+        # shorter insertion arrow on the clear upper-right area of the card.
+        arrow = Polygon((18, 22), (22, 22), (22, 28), (26, 28),
+                        (20, 35), (14, 28), (18, 28), align=None)
     part -= Pos(0, 0, height - 0.4) * extrude(arrow, amount=0.5)
     # Recessed label on the hose side, beside the arrow and outside the elbow.
     # No raised lettering on the sliding interface; TPU remains unmarked.
     if d.revision < 1:
         raise ValueError('Print revision must be positive')
-    label = Text(f'REV {d.revision}', font_size=4.0, font='Arial')
-    part -= Pos(-18, 36, height - 0.4) * extrude(label, amount=0.5)
+    label = Text(f'REV {d.revision}', font_size=d.revision_font_size, font='Arial')
+    part -= Pos(-18, 29 if d.project_label else 36, height - 0.4) * extrude(label, amount=0.5)
+    if d.project_label:
+        for line, y in zip(d.project_label.split('\n'), (46, 40)):
+            name = Text(line, font_size=5.0, font='Arial', font_style=FontStyle.BOLD)
+            if name.bounding_box().size.X > d.flange_width - 8:
+                raise ValueError('Project label is too wide for the card')
+            part -= Pos(0, y, height - 0.4) * extrude(name, amount=0.5)
     part.label = 'V7 inlet and sliding flange — fit test'
     if not part.is_valid or len(part.solids()) != 1:
         raise RuntimeError('Expected one valid solid')
