@@ -10,7 +10,7 @@ from pathlib import Path
 
 from build123d import (
     Align, Axis, Cylinder, Torus, Pos, Rot, Plane, RectangleRounded, Polygon, Text,
-    export_step, export_stl, extrude, fillet, revolve,
+    export_step, export_stl, extrude, fillet, chamfer, revolve,
 )
 
 
@@ -28,6 +28,11 @@ class InterfaceDimensions:
     gasket_radial_clearance: float = 0.2
     gasket_proud: float = 1.0
     revision: int = 1
+    trailing_width: float | None = None
+    trailing_positive_x_extra: float = 0.0
+    trailing_end_inset: float = 0.0
+    pull_tab_length: float = 0.0
+    pull_tab_width: float = 24.0
 
 
 def gasket_seat(d: InterfaceDimensions = InterfaceDimensions()):
@@ -39,9 +44,11 @@ def gasket_seat(d: InterfaceDimensions = InterfaceDimensions()):
         raise ValueError('Gasket seat must leave a solid backing')
     inner, outer = d.gasket_inner_diameter / 2, d.gasket_outer_diameter / 2
     profile = Plane.XZ * Polygon(
-        (inner + .3, -.1), (outer - .3, -.1),
+        (inner + .1, -.1), (outer - .1, -.1),
+        (outer - .1, 0), (outer - .3, .2),
         (outer - .3, .35), (outer, .7), (outer, d.gasket_seat_depth),
-        (inner, d.gasket_seat_depth), (inner, .7), (inner + .3, .35), align=None)
+        (inner, d.gasket_seat_depth), (inner, .7), (inner + .3, .35),
+        (inner + .3, .2), (inner + .1, 0), align=None)
     return revolve(profile, axis=Axis.Z)
 
 
@@ -69,12 +76,29 @@ def build_gasket(d: InterfaceDimensions = InterfaceDimensions(), for_print=False
 
 
 def build_interface(d: InterfaceDimensions = InterfaceDimensions()):
-    flange = extrude(
-        RectangleRounded(d.flange_width, d.flange_length, d.flange_corner_radius),
-        amount=d.flange_thickness,
-    )
+    outline = RectangleRounded(d.flange_width, d.flange_length, d.flange_corner_radius)
+    if d.trailing_width is not None:
+        if d.trailing_width < d.flange_width:
+            raise ValueError('Trailing width must be at least the insertion width')
+        w, t, end = d.flange_width / 2, d.trailing_width / 2, d.flange_length / 2
+        rear = -end + d.trailing_end_inset
+        right = t + d.trailing_positive_x_extra
+        if d.trailing_end_inset < 0 or rear + 25 >= end or right < w:
+            raise ValueError('Invalid trailing extension dimensions')
+        outline = Polygon((-t, rear), (right, rear), (right, rear + 15),
+                          (w, rear + 25), (w, end), (-w, end),
+                          (-w, rear + 25), (-t, rear + 15), align=None)
+        outline = fillet(outline.vertices(), radius=d.flange_corner_radius)
+    if d.pull_tab_length > 0:
+        rear = -d.flange_length / 2 + d.trailing_end_inset
+        overlap = 6.0
+        tab = Pos(0, rear + (overlap - d.pull_tab_length) / 2) * RectangleRounded(
+            d.pull_tab_width, d.pull_tab_length + overlap, 6.0)
+        outline += tab
+    flange = extrude(outline, amount=d.flange_thickness)
     # Rounded entry edge on the top of the mating flange, observed in the STL.
     flange = fillet(flange.faces().sort_by(Axis.Z)[-1].edges(), d.flange_top_round)
+    flange = chamfer(flange.faces().sort_by(Axis.Z)[0].edges(), length=0.3)
     height = d.flange_thickness
     bore = Pos(0, 0, -1) * Cylinder(
         d.hole_diameter / 2, height + 2,

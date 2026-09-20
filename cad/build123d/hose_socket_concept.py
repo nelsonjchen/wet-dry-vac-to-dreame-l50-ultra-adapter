@@ -4,15 +4,15 @@ from pathlib import Path
 from math import sin, cos, radians, degrees, asin, atan2, hypot
 from build123d import (
     Align, Axis, Box, Circle, Cone, Cylinder, Pos, Rot, ThreePointArc, Polygon, Rectangle,
-    export_step, export_stl, sweep, extrude, revolve, loft,
+    export_step, export_stl, sweep, extrude, revolve, loft, fillet, GeomType,
 )
 from reference_interface import InterfaceDimensions, build_interface, gasket_seat
 
-def build_socket_concept(connector_od=32.0, clearance=0.4, insertion_depth=35.0,
+def build_socket_concept(connector_od=30.75, clearance=0.4, insertion_depth=35.0,
                          bend_radius=24.0, exit_angle=None, support_access=False,
                          tilt_up=0.0, socket_taper=2.0):
-    # Provisional 32 mm end OD guessed from the SL18129's nominal 1.25-inch
-    # hose family. This is NOT a measured connector diameter.
+    # Approximate caliper measurement; user confirmed the matching tapered
+    # socket_fit_test.py coupon fits well. Full assembly/seal not yet tested.
     if connector_od <= 0 or clearance < 0 or insertion_depth < 5:
         raise ValueError('Require positive connector OD, nonnegative clearance, and depth >= 5 mm')
     d = InterfaceDimensions()
@@ -51,7 +51,8 @@ def build_socket_concept(connector_od=32.0, clearance=0.4, insertion_depth=35.0,
     outer += outlet * Cone(throat_radius + wall, mouth_radius + wall, transition_length, align=alignment)
     inner += outlet * Cone(throat_radius, root_radius, transition_length, align=alignment)
     socket = outlet * Pos(0, 0, transition_length)
-    outer += socket * Cylinder(mouth_radius + wall, insertion_depth, align=alignment)
+    # The supported-section extrusion below supplies the entire socket shell;
+    # a duplicate cylinder creates nearly coincident mouth edges at some sizes.
     inner += socket * Cone(
         root_radius, mouth_radius + (mouth_radius - root_radius) * 0.1 / insertion_depth,
         insertion_depth + 0.1, align=alignment,
@@ -89,8 +90,9 @@ def build_socket_concept(connector_od=32.0, clearance=0.4, insertion_depth=35.0,
         outlet * supported_section(bend_outer_radius),
         socket * supported_section(socket_outer_radius),
     ])
-    pedestal += extrude(socket * supported_section(socket_outer_radius),
-                        amount=insertion_depth, dir=(sin(theta), 0, cos(theta)))
+    socket_body = extrude(supported_section(socket_outer_radius), amount=insertion_depth)
+    socket_body = fillet(socket_body.faces().sort_by(Axis.Z)[-1].edges(), radius=0.5)
+    pedestal += socket * socket_body
     mouth_x = bend_x + (transition_length + insertion_depth) * sin(theta)
     footprint_end = mouth_x + socket_outer_radius * cos(theta)
     # Retain only the area below/within the outlet's projected footprint.
@@ -107,16 +109,19 @@ def build_socket_concept(connector_od=32.0, clearance=0.4, insertion_depth=35.0,
         angle = degrees(asin(min(1.0, limit / hypot(length, half_width)))
                         - atan2(half_width, length))
         exit_angle = -90 + min(30.0, max(0.0, angle))
+    # Mouth rounding was applied to the socket before union/clipping, avoiding
+    # fragile coincident-edge selection. The inner lead-in is cut separately.
+    duct = outer + pedestal
     orient = Rot(0, 0, exit_angle)
     inlet = Pos(0, 0, -0.1) * Cylinder(
         throat_radius, top_of_plate + 0.1, align=alignment,
     )
-    part = build_interface() + orient * (outer + pedestal) - orient * inner - inlet
+    part = build_interface() + orient * duct - orient * inner - inlet
     # Cut after union: the bed-level pedestal must not refill the dock seal seat.
     part -= gasket_seat(d)
     # support_access is retained as a legacy export-name alias only.
     # A single card has no trapped rail-gap supports and must not be perforated.
-    part.label = f'{tilt_up:g}-degree upward hose outlet - unmeasured connector'
+    part.label = f'REV 1 hose adapter - {connector_od:g} mm connector'
     if not part.is_valid or len(part.solids()) != 1:
         raise RuntimeError('Expected one valid solid')
     return part
@@ -124,7 +129,7 @@ def build_socket_concept(connector_od=32.0, clearance=0.4, insertion_depth=35.0,
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--connector-od', type=float, default=32.0)
+    parser.add_argument('--connector-od', type=float, default=30.75)
     parser.add_argument('--clearance', type=float, default=0.4, help='Diametral clearance, mm')
     parser.add_argument('--insertion-depth', type=float, default=35.0)
     parser.add_argument('--socket-taper', type=float, default=2.0,

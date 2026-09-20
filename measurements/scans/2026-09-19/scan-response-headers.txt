@@ -1,0 +1,10 @@
+HTTP/1.1 201 Created
+Cache-Control: no-store
+Accept-Encoding: identity
+X-Frame-Options: DENY
+Content-Length: 0
+Content-Type: text/xml
+Connection: close
+Pragma: no-cache
+Location: http://BRW749779E9AD96.local/eSCL/ScanJobs/e2248133-b4af-11f1-87b1-b42200d89e54
+

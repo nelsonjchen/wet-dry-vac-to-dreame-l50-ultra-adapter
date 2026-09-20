@@ -103,12 +103,24 @@ uv run python cad/build123d/hello_world_render.py
 
 ### Hose socket concept
 
+For the user's approximate 30.75 mm hose-end measurement, the standalone
+coupon command `uv run python cad/build123d/socket_fit_test.py` exports
+`cad/exports/socket-fit-test-30p75.stl`. Print narrow end on the bed and wide
+mouth up, with no supports. Its open-ended 35 mm socket tapers from 32.15 mm
+mouth ID to 30.15 mm root ID, with the same 1.5 mm entry chamfer and 0.5 mm
+outer-mouth rounding. Try a gentle push fit; do not force it. An upright coupon
+may print differently from a horizontally oriented final elbow. The user reports
+that this coupon fits very well and that card insertion works. The main REV 1
+adapter now uses the same socket dimensions. Next test is the full PLA adapter
+without TPU, leaving its blind gasket groove empty. Full assembly clearance,
+air sealing, and suction performance remain unverified; add TPU later if needed.
+
 `cad/build123d/hose_socket_concept.py` adds a **90-degree elbow with a horizontal
 socket aimed down-right in top view**, automatically limited to preserve a
 3 mm clear strip inside the card's +X edge.
 The bend keeps a 33 mm round passage, then transitions over 6 mm
-to the socket. Defaults are a **guessed, unmeasured 32 mm connector OD** for the
-Stanley SL18129, with a **31.4 mm root / 33.4 mm mouth tapered bore** before
+to the socket. Defaults use the **approximately measured 30.75 mm connector OD** for the
+Stanley SL18129, with a **30.15 mm root / 32.15 mm mouth tapered bore** before
 the entry chamfer. The taper is centered on OD + 0.4 mm diametral clearance.
 Defaults are 2 mm diametral taper, 35 mm insertion depth (including a 1.5 mm entry
 chamfer), 3 mm walls, and a 24 mm bend centreline radius.
@@ -147,11 +159,39 @@ for geometry review; use the separate interface part for the initial dock fit te
 
 ### Reference interface
 
+**REV 4 pull-tab trial:** `uv run python cad/build123d/rev4_card_fit_test.py`
+exports `reference-interface-rev4-fit-test.stl`. REV 3 was reported to fit much
+better. Its fit outline is preserved; a centered bag-style flat pull tab adds
+14 mm in -Y, 24 mm wide, with R6 end corners and the card's existing edge
+treatments. These tab dimensions are prototype choices inspired by the original
+bag, not an exact scan trace. Tab thickness remains 3.4 mm, with no through-hole
+or raised handle. Check finger access and compartment clearance. Earlier test
+exports and the full REV 1 adapter remain unchanged.
+
+**REV 3 card-only trial:** `uv run python cad/build123d/rev3_card_fit_test.py`
+exports `reference-interface-rev3-fit-test.stl`. Relative to REV 2, the trailing
++X edge moves from X=39 to X=42 mm; the -X edge stays X=-39 mm. The rear edge
+moves from Y=-50.8 to Y=-31.8 mm (19 mm toward the hole). The 15 mm rear section
+and 10 mm shoulder transition move with that edge, preserving the extension
+shape rather than slicing it off. Overall length is 82.6 mm, maximum width
+81 mm; insertion end remains Y=50.8, X=±35 mm. Hole, thickness and gasket seat
+stay fixed. REV 1 full adapter and REV 2 exports are unchanged.
+
+**REV 2 card-only width trial:** run `uv run python cad/build123d/rev2_card_fit_test.py`.
+The separate `reference-interface-rev2-fit-test.stl` widens only the trailing
+end to 78 mm while retaining the 70 mm insertion end. See
+[scan measurements and assumptions](measurements/rev2-trailing-width.md).
+The full adapter stays REV 1 until this outline has been physically checked.
+
 Rigid prints carry a recessed **REV 1** label beside the insertion arrow on
 the hose-facing side (4 mm font, 0.4 mm engraving depth). The TPU ring is
 unmarked. `InterfaceDimensions.revision` controls this shared print revision;
 bump it deliberately when making the next physical revision. It is independent
 of the Git commit and is not automatically incremented by regeneration.
+
+REV 1 finishing: 0.3 mm bottom card-perimeter chamfer, 0.2 mm gasket-pocket
+entry chamfers (retaining undercut unchanged), and 0.5 mm outer socket-mouth
+rounding. The existing upper card rounding and inner hose lead-in remain.
 
 The TPU seal resembles an attached O-ring: a rounded bead extends **-Z toward
 the dock**, 1 mm below the card's dock-facing surface. It presses in from -Z
