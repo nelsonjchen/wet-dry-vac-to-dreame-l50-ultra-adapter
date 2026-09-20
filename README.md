@@ -208,6 +208,21 @@ rounding. The existing upper card rounding and inner hose lead-in remain.
 Full adapters apply the 0.3 mm bottom chamfer after joining card and pipe
 support, around the combined outer footprint only; inlet and gasket edges
 are excluded. Standalone cards retain their own perimeter chamfer.
+Full adapters now use a 1 mm outer mouth fillet, continuing down the exposed
+support corners; the tested inner taper and seal pocket are unchanged.
+
+### REV 5 — tapered elbow
+
+Run `uv run python cad/build123d/rev5_full_adapter.py` to export
+`cad/exports/hose-adapter-rev5.stl` and `.step`. REV 4 remains available unchanged.
+The elbow bore gradually narrows from 33 mm at the card to 30.15 mm at the
+socket root using a smooth loft through 13 normal sections. The outside follows
+with a 3 mm radial wall allowance, plus the solid printable support underneath.
+The support uses vertical loft sections down to the bed, avoiding a pinched
+radial junction and triangular patches at the card.
+The 6 mm neck retains the root bore diameter; its exterior blends out to the
+existing socket shell. The tested 35 mm socket taper (30.15–32.15 mm), mouth
+lead-in, card fit, and seal pocket are retained. The card is engraved REV 5.
 
 The TPU seal resembles an attached O-ring: a rounded bead extends **-Z toward
 the dock**, 1 mm below the card's dock-facing surface. It presses in from -Z

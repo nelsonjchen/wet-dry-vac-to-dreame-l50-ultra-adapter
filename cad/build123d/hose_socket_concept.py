@@ -11,7 +11,8 @@ from reference_interface import InterfaceDimensions, build_interface, gasket_sea
 
 def build_socket_concept(connector_od=30.75, clearance=0.4, insertion_depth=35.0,
                          bend_radius=24.0, exit_angle=None, support_access=False,
-                         tilt_up=0.0, socket_taper=2.0, interface_dimensions=None):
+                         tilt_up=0.0, socket_taper=2.0, interface_dimensions=None,
+                         tapered_elbow=False):
     # Approximate caliper measurement; user confirmed the matching tapered
     # socket_fit_test.py coupon fits well. Full assembly/seal not yet tested.
     if connector_od <= 0 or clearance < 0 or insertion_depth < 5:
@@ -43,14 +44,29 @@ def build_socket_concept(connector_od=30.75, clearance=0.4, insertion_depth=35.0
     )
     outer = sweep(Pos(0, 0, top_of_plate) * Circle(throat_radius + wall), path=arc)
     inner = sweep(Pos(0, 0, top_of_plate) * Circle(throat_radius), path=arc)
+    if tapered_elbow:
+        # Smoothstep radius change spreads the reduction across the bend,
+        # with zero radius slope at both ends. Normal sections retain 3 mm wall.
+        stations = []
+        for i in range(13):
+            t = i / 12
+            a = theta * t
+            radius = throat_radius + (root_radius - throat_radius) * (3*t*t - 2*t*t*t)
+            location = Pos(bend_radius*(1-cos(a)), 0,
+                           top_of_plate+bend_radius*sin(a)) * Rot(0, degrees(a), 0)
+            stations.append((location, radius))
+        inner = loft([location * Circle(radius) for location, radius in stations])
+        outer = loft([location * Circle(radius + wall) for location, radius in stations])
     # Small overlap joins the elbow directly to the single card.
     outer += Pos(0, 0, top_of_plate - 0.2) * Cylinder(throat_radius + wall, 0.2, align=alignment)
     inner += Pos(0, 0, top_of_plate - 0.3) * Cylinder(throat_radius, 0.3, align=alignment)
     bend_x = bend_radius * (1 - cos(theta))
     bend_z = top_of_plate + bend_radius * sin(theta)
     outlet = Pos(bend_x, 0, bend_z) * Rot(0, bend_degrees, 0)
-    outer += outlet * Cone(throat_radius + wall, mouth_radius + wall, transition_length, align=alignment)
-    inner += outlet * Cone(throat_radius, root_radius, transition_length, align=alignment)
+    bend_exit_radius = root_radius if tapered_elbow else throat_radius
+    outer += outlet * Cone(bend_exit_radius + wall, mouth_radius + wall, transition_length, align=alignment)
+    inner += outlet * (Cylinder(root_radius, transition_length, align=alignment) if tapered_elbow
+                       else Cone(throat_radius, root_radius, transition_length, align=alignment))
     socket = outlet * Pos(0, 0, transition_length)
     # The supported-section extrusion below supplies the entire socket shell;
     # a duplicate cylinder creates nearly coincident mouth edges at some sizes.
@@ -81,6 +97,18 @@ def build_socket_concept(connector_od=30.75, clearance=0.4, insertion_depth=35.0
         filled_profile, axis=Axis((bend_radius, 0, top_of_plate), (0, 1, 0)),
         revolution_arc=bend_degrees,
     )
+    if tapered_elbow:
+        # Vertical sections carry the narrowing shell straight to the bed.
+        # Radially rotated filled sections pinch together at the bend axis,
+        # leaving triangular side patches and a notch at the card.
+        support_sections = []
+        for i, (_, radius) in enumerate(stations):
+            a = theta * i / (len(stations)-1)
+            x = bend_radius*(1-cos(a))
+            height = top_of_plate+bend_radius*sin(a)
+            support_sections.append(Pos(x, 0, height/2) * Rot(0, 90, 0)
+                                    * Rectangle(height, 2*(radius+wall)))
+        pedestal = loft(support_sections)
     # D-shaped sections carry the socket's lower half down to the bed.
     # Local +X points downward in the tilted socket plane. Extend below the
     # bed, then clip; no rectangular corner protrudes above the round shell.
@@ -88,11 +116,13 @@ def build_socket_concept(connector_od=30.75, clearance=0.4, insertion_depth=35.0
     def supported_section(radius):
         return Circle(radius) + Pos(support_depth / 2, 0) * Rectangle(support_depth, 2 * radius)
     pedestal += loft([
-        outlet * supported_section(bend_outer_radius),
+        outlet * supported_section(bend_exit_radius + wall),
         socket * supported_section(socket_outer_radius),
     ])
     socket_body = extrude(supported_section(socket_outer_radius), amount=insertion_depth)
-    socket_body = fillet(socket_body.faces().sort_by(Axis.Z)[-1].edges(), radius=0.5)
+    # Round the exposed mouth perimeter, including the two vertical support
+    # corners. Do this before joining/clipping to keep the bore and card intact.
+    socket_body = fillet(socket_body.faces().sort_by(Axis.Z)[-1].edges(), radius=1.0)
     pedestal += socket * socket_body
     mouth_x = bend_x + (transition_length + insertion_depth) * sin(theta)
     footprint_end = mouth_x + socket_outer_radius * cos(theta)
