@@ -22,6 +22,7 @@ class InterfaceDimensions:
     flange_thickness: float = 3.4
     flange_corner_radius: float = 6.0
     flange_top_round: float = 0.6
+    flange_bottom_chamfer: float = 0.3
     gasket_outer_diameter: float = 42.0
     gasket_inner_diameter: float = 35.0
     gasket_seat_depth: float = 1.6
@@ -100,7 +101,8 @@ def build_interface(d: InterfaceDimensions = InterfaceDimensions()):
     flange = extrude(outline, amount=d.flange_thickness)
     # Rounded entry edge on the top of the mating flange, observed in the STL.
     flange = fillet(flange.faces().sort_by(Axis.Z)[-1].edges(), d.flange_top_round)
-    flange = chamfer(flange.faces().sort_by(Axis.Z)[0].edges(), length=0.3)
+    if d.flange_bottom_chamfer:
+        flange = chamfer(flange.faces().sort_by(Axis.Z)[0].edges(), length=d.flange_bottom_chamfer)
     height = d.flange_thickness
     bore = Pos(0, 0, -1) * Cylinder(
         d.hole_diameter / 2, height + 2,

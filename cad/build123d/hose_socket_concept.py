@@ -1,10 +1,11 @@
 """Parametric elbow and female hose socket on the V7 interface; mm."""
 import argparse
+from dataclasses import replace
 from pathlib import Path
 from math import sin, cos, radians, degrees, asin, atan2, hypot
 from build123d import (
     Align, Axis, Box, Circle, Cone, Cylinder, Pos, Rot, ThreePointArc, Polygon, Rectangle,
-    export_step, export_stl, sweep, extrude, revolve, loft, fillet, GeomType,
+    export_step, export_stl, sweep, extrude, revolve, loft, fillet, chamfer, GeomType,
 )
 from reference_interface import InterfaceDimensions, build_interface, gasket_seat
 
@@ -116,9 +117,20 @@ def build_socket_concept(connector_od=30.75, clearance=0.4, insertion_depth=35.0
     inlet = Pos(0, 0, -0.1) * Cylinder(
         throat_radius, top_of_plate + 0.1, align=alignment,
     )
-    part = build_interface(d) + orient * duct - orient * inner - inlet
+    # Defer the bottom chamfer until after union so it follows the whole
+    # footprint, including the projecting pedestal. Do not select hole wires.
+    part = build_interface(replace(d, flange_bottom_chamfer=0.0)) + orient * duct - orient * inner - inlet
     # Cut after union: the bed-level pedestal must not refill the dock seal seat.
     part -= gasket_seat(d)
+    if d.flange_bottom_chamfer:
+        bottom_faces = [f for f in part.faces()
+                        if f.geom_type == GeomType.PLANE
+                        and abs(f.bounding_box().min.Z) < 1e-6
+                        and abs(f.bounding_box().max.Z) < 1e-6]
+        # The largest bed face is the main footprint; smaller concentric
+        # faces belong to the inlet/gasket rim and must remain unchanged.
+        bottom = max(bottom_faces, key=lambda f: f.area)
+        part = chamfer(bottom.outer_wire().edges(), length=d.flange_bottom_chamfer)
     # support_access is retained as a legacy export-name alias only.
     # A single card has no trapped rail-gap supports and must not be perforated.
     part.label = f'REV {d.revision} hose adapter - {connector_od:g} mm connector'

@@ -205,6 +205,9 @@ of the Git commit and is not automatically incremented by regeneration.
 REV 1 finishing: 0.3 mm bottom card-perimeter chamfer, 0.2 mm gasket-pocket
 entry chamfers (retaining undercut unchanged), and 0.5 mm outer socket-mouth
 rounding. The existing upper card rounding and inner hose lead-in remain.
+Full adapters apply the 0.3 mm bottom chamfer after joining card and pipe
+support, around the combined outer footprint only; inlet and gasket edges
+are excluded. Standalone cards retain their own perimeter chamfer.
 
 The TPU seal resembles an attached O-ring: a rounded bead extends **-Z toward
 the dock**, 1 mm below the card's dock-facing surface. It presses in from -Z
