@@ -1,0 +1,3 @@
+# Generated CAD exports are reviewed as models, rather than line diffs.
+models/*.step -diff linguist-generated=true
+models/*.stl -diff linguist-generated=true
