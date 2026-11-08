@@ -1,6 +1,9 @@
 # V7 reference inlet and sliding flange
 
-Source supplied by the user: `Dreame+Dust+Bin+-+3MF+-+V7_stls.zip`.
+Source supplied by the user: `Dreame+Dust+Bin+-+3MF+-+V7_stls.zip`, from the
+[MakerWorld reusable dust-bin model](https://makerworld.com/en/models/1624511-mova-dreame-reusable-dust-bin-no-filters-needed#profileId-1715080).
+Its inlet and mating-interface measurements were the starting reference;
+later revisions were fine-tuned for this adapter using physical fit feedback.
 
 - SHA-256: `a8e4d698d9315e869bab5a99be1ee444999cd803fef83ca99df1a5e2de68c678`
 - Main mesh: `obj_2_Dreame Dust Bin - MAIN - STL - V7.stl`

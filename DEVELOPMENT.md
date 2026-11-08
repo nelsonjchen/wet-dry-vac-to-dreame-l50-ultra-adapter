@@ -1,3 +1,5 @@
+> Historical development notes. The project is now finished and the DeWalt setup is in use; Nelson reports no hairballs since installation. References below to pending tests or prototype status describe earlier stages. See [README.md](README.md) for the current status.
+
 # Dreame L50 Ultra → Wet/Dry Vac Adapter
 
 A reversible, 3D-printable adapter concept for using an external wet/dry vacuum to evacuate the dust bin of a Dreame L50 Ultra when the stock dock struggles with dense dog hair and other fibrous debris.

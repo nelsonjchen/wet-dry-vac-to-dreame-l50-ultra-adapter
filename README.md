@@ -27,10 +27,10 @@ elbow. The second bend turns the hose connection downward.
 ![DeWalt dock adapter and separate elbow](docs/images/dewalt-adapter.webp)
 
 These are renders of the actual model meshes, not photographs of finished parts.
-The complete card-and-elbow assemblies have not been validated for sealing,
-retention, dock-cover clearance or reliable debris evacuation. A socket coupon
-and earlier card fit tests were successful; that does not establish those other
-properties. The printed male elbow connections need their own fit checks.
+The finished DeWalt setup is in use. Nelson reports no hairballs since putting
+it into service. Earlier card and socket coupons helped establish the fit during
+development. The repository also includes Stanley and cross-vacuum variants;
+check the measured dimensions when adapting them to another hose or dock.
 
 ## Edit and regenerate
 
@@ -40,6 +40,12 @@ Install [uv](https://docs.astral.sh/uv/), then:
 uv sync --locked
 uv run python cad/export_models.py
 ```
+
+The initial inlet and mating-interface dimensions came from the
+[MakerWorld reusable dust-bin model](https://makerworld.com/en/models/1624511-mova-dreame-reusable-dust-bin-no-filters-needed#profileId-1715080).
+Those dimensions were recreated in build123d and then refined through
+measurements and physical fit feedback for this adapter. The source archive
+itself is not redistributed.
 
 The source is under [cad/build123d/](cad/build123d/). The main entry points are
 `rev5_full_adapter.py` for Stanley, `dewalt_rev5_adapter.py` for DeWalt, and
@@ -60,22 +66,23 @@ blender --background --python cad/render_models.py
 
 PNG renders are written to the ignored `cad/exports/blog/` directory.
 
-## Prototype status and background
+## Status and background
 
-The goal is to handle dense dog hair that the stock dock struggles to empty.
-The intended path is robot → existing dock evacuation path → printed adapter
-and hose → external wet/dry vacuum. The design remains removable.
+The project handles dense dog hair that the stock dock struggled to empty.
+The path is robot → existing dock evacuation path → printed adapter and hose
+→ external wet/dry vacuum. The design remains removable. Nelson switched from
+the Stanley to the newer DeWalt because it was quieter.
 
-Suction level, relief/air bleed, sealing and supervised emptying tests remain
-part of the prototype work. More suction is not automatically suitable for the
-robot's bin, flaps and seals. Any automation needs reliable shutoff and a motor-
-rated switching device. The Home Assistant relay sequence was tested separately
-from dust capture through the adapter.
+Home Assistant switches the external vacuum through a Sonoff S31 running
+ESPHome, following the Dreame's auto-empty status. The plug has an independent
+two-minute cutoff in its firmware and boots with its relay off. The earlier relay-only tests in the development notes were milestones
+on the way to the working setup. If adapting the design, account for the
+robot's bin, flaps and seals and use a motor-rated switching device.
 
 Nelson supplied the idea, measurements and physical fit feedback. Codex did the
 CAD implementation and helped with the automation and documentation.
 
-The [development notes](DEVELOPMENT.md) preserve the revisions, measurements,
-fit reports and remaining questions. [Measurement notes](measurements/) record
+The [development notes](DEVELOPMENT.md) preserve the historical revisions,
+measurements and fit reports, including questions that were still open then. [Measurement notes](measurements/) record
 the interface provenance; the supplied third-party reference archive is not
 redistributed here.
